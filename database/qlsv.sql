@@ -15,14 +15,16 @@ CREATE TABLE users (
 
 CREATE TABLE lophoc (
     malop INT AUTO_INCREMENT PRIMARY KEY,
-    tenlop VARCHAR(100) NOT NULL
+    malophoc VARCHAR(20) NOT NULL UNIQUE,
+    tenlop VARCHAR(100) NOT NULL UNIQUE,
+    ghichu VARCHAR(255)
 );
 
 CREATE TABLE sinhvien (
     masv INT AUTO_INCREMENT PRIMARY KEY,
     mssv VARCHAR(20) NOT NULL UNIQUE,
     hoten VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
     sodienthoai VARCHAR(20),
     ngaysinh DATE,
     gioitinh VARCHAR(10),
@@ -36,11 +38,11 @@ CREATE TABLE sinhvien (
 INSERT INTO users (username, password, fullname) VALUES
 ('admin', '123456', 'Nguyễn Nhật Huy');
 
-INSERT INTO lophoc (tenlop) VALUES
-('68PM1'),
-('68PM2'),
-('68PM3'),
-('68PM4');
+INSERT INTO lophoc (malophoc, tenlop, ghichu) VALUES
+('68PM1', 'Lớp 68PM1', 'Công nghệ phần mềm'),
+('68PM2', 'Lớp 68PM2', 'Công nghệ phần mềm'),
+('68PM3', 'Lớp 68PM3', 'Công nghệ phần mềm'),
+('68PM4', 'Lớp 68PM4', 'Công nghệ phần mềm');
 
 INSERT INTO sinhvien (mssv, hoten, email, sodienthoai, ngaysinh, gioitinh, diachi, malop) VALUES
 ('SV000001', 'Nguyễn Văn An', 'an@example.com', '0987654321', '2004-01-15', 'Nam', 'Hà Nội', 3),

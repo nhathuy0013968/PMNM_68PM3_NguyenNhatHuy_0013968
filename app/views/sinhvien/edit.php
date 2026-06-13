@@ -51,7 +51,7 @@
                 <?php foreach ($danhsachLophoc as $lop): ?>
                     <option value="<?= htmlspecialchars($lop['malop']) ?>"
                         <?= (($sinhvien['malop'] ?? '') == $lop['malop']) ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($lop['tenlop']) ?>
+                        <?= htmlspecialchars($lop['malophoc'] . ' - ' . $lop['tenlop']) ?>
                     </option>
                 <?php endforeach; ?>
             </select>

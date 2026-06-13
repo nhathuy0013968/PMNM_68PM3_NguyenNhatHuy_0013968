@@ -7,8 +7,18 @@
 
     <form method="POST" action="<?= $basePath ?>/lophoc/store">
         <div class="form-group">
+            <label>Mã lớp</label>
+            <input type="text" name="malophoc" value="<?= htmlspecialchars($old['malophoc'] ?? '') ?>" required>
+        </div>
+
+        <div class="form-group">
             <label>Tên lớp</label>
             <input type="text" name="tenlop" value="<?= htmlspecialchars($old['tenlop'] ?? '') ?>" required>
+        </div>
+
+        <div class="form-group">
+            <label>Ghi chú</label>
+            <textarea name="ghichu"><?= htmlspecialchars($old['ghichu'] ?? '') ?></textarea>
         </div>
 
         <div class="actions">
