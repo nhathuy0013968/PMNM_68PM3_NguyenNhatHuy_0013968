@@ -7,9 +7,12 @@ class SinhvienController extends Controller
     public function index(): void
     {
         $sinhvienModel = $this->model('SinhvienModel');
+        $search = trim($_GET['search'] ?? '');
+        $sortBy = $_GET['sortBy'] ?? 'masv';
+        $sortDir = strtoupper($_GET['sortDir'] ?? 'ASC') === 'DESC' ? 'DESC' : 'ASC';
 
         $perPage = 5;
-        $totalRows = $sinhvienModel->countAll();
+        $totalRows = $sinhvienModel->countAll($search);
         $totalPages = max(1, (int) ceil($totalRows / $perPage));
         $currentPage = max(1, (int) ($_GET['page'] ?? 1));
         $currentPage = min($currentPage, $totalPages);
@@ -17,11 +20,14 @@ class SinhvienController extends Controller
 
         $this->view('sinhvien/index', [
             'title' => 'Danh sách sinh viên',
-            'danhsachSinhvien' => $sinhvienModel->getAll($perPage, $offset),
+            'danhsachSinhvien' => $sinhvienModel->getAll($perPage, $offset, $search, $sortBy, $sortDir),
             'currentPage' => $currentPage,
             'totalPages' => $totalPages,
             'totalRows' => $totalRows,
             'perPage' => $perPage,
+            'search' => $search,
+            'sortBy' => $sortBy,
+            'sortDir' => $sortDir,
             'basePath' => $this->basePath,
         ]);
     }
@@ -61,7 +67,7 @@ class SinhvienController extends Controller
         }
 
         $sinhvienModel->create($data);
-
+        $this->flash('success', 'Thêm sinh viên thành công.');
         $this->redirect('/sinhvien');
     }
 
@@ -71,7 +77,8 @@ class SinhvienController extends Controller
         $sinhvien = $sinhvienModel->getById($masv);
 
         if (!$sinhvien) {
-            die('Không tìm thấy sinh viên cần sửa.');
+            $this->flash('error', 'Không tìm thấy sinh viên cần sửa.');
+            $this->redirect('/sinhvien');
         }
 
         $this->view('sinhvien/edit', [
@@ -107,15 +114,21 @@ class SinhvienController extends Controller
         }
 
         $sinhvienModel->update($data);
-
+        $this->flash('success', 'Cập nhật sinh viên thành công.');
         $this->redirect('/sinhvien');
     }
 
     public function delete($masv): void
     {
         $sinhvienModel = $this->model('SinhvienModel');
-        $sinhvienModel->delete($masv);
 
+        if (!$sinhvienModel->getById($masv)) {
+            $this->flash('error', 'Sinh viên không tồn tại.');
+            $this->redirect('/sinhvien');
+        }
+
+        $sinhvienModel->delete($masv);
+        $this->flash('success', 'Xóa sinh viên thành công.');
         $this->redirect('/sinhvien');
     }
 
@@ -133,17 +146,42 @@ class SinhvienController extends Controller
         ];
     }
 
-    private function validate(array $data, SinhvienModel $sinhvienModel, ?int $excludeMasv = null): string
+    private function validate(array $data, SinhvienModel $model, ?int $excludeMasv = null): string
     {
         if ($data['mssv'] === '' || $data['hoten'] === '' || $data['email'] === '') {
             return 'Vui lòng nhập đầy đủ mã sinh viên, họ tên và email.';
         }
 
-        if ($sinhvienModel->existsMssv($data['mssv'], $excludeMasv)) {
+        if (!preg_match('/^[A-Za-z0-9_-]{4,20}$/', $data['mssv'])) {
+            return 'Mã sinh viên phải có 4-20 ký tự, chỉ gồm chữ, số, dấu gạch ngang hoặc gạch dưới.';
+        }
+
+        if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            return 'Email không đúng định dạng.';
+        }
+
+        if ($data['sodienthoai'] !== '' && !preg_match('/^[0-9]{8,15}$/', $data['sodienthoai'])) {
+            return 'Số điện thoại phải gồm 8-15 chữ số.';
+        }
+
+        if ($data['ngaysinh'] !== '' && $data['ngaysinh'] > date('Y-m-d')) {
+            return 'Ngày sinh không được lớn hơn ngày hiện tại.';
+        }
+
+        if ($model->existsMssv($data['mssv'], $excludeMasv)) {
             return 'Mã sinh viên đã tồn tại, vui lòng nhập mã khác.';
         }
 
+        if ($model->existsEmail($data['email'], $excludeMasv)) {
+            return 'Email đã được sử dụng bởi sinh viên khác.';
+        }
+
         return '';
+    }
+
+    private function flash(string $type, string $message): void
+    {
+        $_SESSION['flash'] = ['type' => $type, 'message' => $message];
     }
 
     private function redirect(string $path): void
