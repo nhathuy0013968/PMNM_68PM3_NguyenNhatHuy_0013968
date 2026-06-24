@@ -3,7 +3,7 @@
 class ConnectDB
 {
     private string $host = '127.0.0.1';
-    private string $port = '3307';
+    private string $port = '3306';
     private string $dbname = 'qlsv_0013968';
     private string $username = 'root';
     private string $password = '';
